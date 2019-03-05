@@ -1,0 +1,17 @@
+{
+    "name": "danscott/linnworks-php-sdk",
+    "description": "PHP SDK for Linnworks",
+    "type": "library",
+    "require": {
+        "php": "^7.2",
+        "guzzlehttp/guzzle": "^6.3"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Linnworks\\": "src/"
+        }
+    }
+}
