@@ -3,8 +3,7 @@
 namespace Linnworks;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
-use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * Client to make requests to the Linnworks API.
@@ -17,19 +16,21 @@ class LinnworksClient
 
     const PRE_AUTH_BASE_URL = "https://api.linnworks.net/api/";
 
-    const GET = "GET";
-    const POST = "POST";
-    const PUT = "PUT";
-    const DELETE = "DELETE";
-
     /**
      * Create a new instance of the API client.
      *
-     * @param Client|null $client
+     * @param string|null $server
+     * @param string|null $token
      */
-    public function __construct(?Client $client = null)
+    public function __construct(?string $server = null, ?string $token = null)
     {
-        $this->client = $client;
+        if ($server !== null) {
+            $this->setServer($server);
+        }
+
+        if ($token !== null) {
+            $this->setToken($token);
+        }
     }
 
     /**
@@ -100,55 +101,21 @@ class LinnworksClient
     }
 
     /**
-     * Make a GET request to the Linnworks API.
-     *
-     * @param string $uri
-     * @param array $params
-     * @return ResponseInterface
-     * @throws GuzzleException
-     */
-    public function get(string $uri, array $params = []): ResponseInterface
-    {
-        return $this->call(self::GET, $uri, $params);
-    }
-
-    /**
      * Make a POST request to the Linnworks API.
      *
      * @param string $uri
      * @param array $params
-     * @return ResponseInterface
-     * @throws GuzzleException
+     * @return StreamInterface
      */
-    public function post(string $uri, array $params = []): ResponseInterface
+    public function post(string $uri, array $params = []): StreamInterface
     {
-        return $this->call(self::POST, $uri, $params);
-    }
+        $url = $this->getBaseUrl() . $uri;
+        $body = $this->buildPayload($params);
 
-    /**
-     * Make a PUT request to the Linnworks API.
-     *
-     * @param string $uri
-     * @param array $params
-     * @return ResponseInterface
-     * @throws GuzzleException
-     */
-    public function put(string $uri, array $params = []): ResponseInterface
-    {
-        return $this->call(self::PUT, $uri, $params);
-    }
+        $response = $this->getClient()->post($url, $body);
+        $contents = $response->getBody()->getContents();
 
-    /**
-     * Make a DELETE request to the Linnworks API.
-     *
-     * @param string $uri
-     * @param array $params
-     * @return ResponseInterface
-     * @throws GuzzleException
-     */
-    public function delete(string $uri, array $params = []): ResponseInterface
-    {
-        return $this->call(self::DELETE, $uri, $params);
+        return json_decode($contents);
     }
 
     /**
@@ -169,10 +136,10 @@ class LinnworksClient
     protected function getHeaders(): array
     {
         return [
+
             "Content-Type" => "application/x-www-form-urlencoded; charset=UTF-8",
             "User-Agent" => "Linnworks PHP API SDK ",
             "Referer" => "https://www.linnworks.net/",
-            // "Content-Length" => "" . strlen($data),
             "Authorization" => $this->getToken()
         ];
     }
@@ -180,40 +147,14 @@ class LinnworksClient
     /**
      * Build the request body using the contents.
      *
-     * @param string $method
      * @param array $params
      * @return array
      */
-    protected function buildBody(string $method, array $params = []): array
+    protected function buildPayload(array $params = []): array
     {
-        if ($method === self::GET) {
-            return [
-                'query' => [
-                    '_query' => $params
-                ]
-            ];
-        }
-
         return [
-            'body' => $params
+            'form_params' => $params,
+            'headers' => $this->getHeaders()
         ];
-    }
-
-    /**
-     * Execute a request to the Linnworks API.
-     *
-     * @param string $method
-     * @param string $uri
-     * @param array $params
-     * @return ResponseInterface
-     * @throws GuzzleException
-     */
-    public function call(string $method, string $uri, array $params = []): ResponseInterface
-    {
-        $body = $this->buildBody($method, $params);
-
-        $response = $this->getClient()->request($method, $uri, $body);
-
-        return $response;
     }
 }

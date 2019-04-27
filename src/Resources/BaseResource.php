@@ -2,9 +2,10 @@
 
 namespace Linnworks\Resources;
 
-use GuzzleHttp\Exception\GuzzleException;
 use Linnworks\LinnworksClient;
-use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
+use ReflectionClass;
+use ReflectionException;
 
 class BaseResource
 {
@@ -20,10 +21,13 @@ class BaseResource
 
     /**
      * BaseResource constructor.
+     *
+     * @param string|null $server
+     * @param string|null $token
      */
-    public function __construct()
+    public function __construct(?string $server = null, string $token = null)
     {
-        $this->client = new LinnworksClient;
+        $this->client = new LinnworksClient($server, $token);
     }
 
     /**
@@ -31,12 +35,14 @@ class BaseResource
      *
      * @param string $name
      * @param array $arguments
-     * @return ResponseInterface
-     * @throws GuzzleException
+     * @return StreamInterface
+     * @throws ReflectionException
      */
-    public function __call(string $name, array $arguments): ResponseInterface
+    public function __call(string $name, array $arguments): StreamInterface
     {
-        $resource = get_class($this);
+        $reflect = new ReflectionClass($this);
+        $resource = $reflect->getShortName();
+
         $action = ucfirst($name);
 
         $uri = implode('/', [$resource, $action]);
