@@ -3,9 +3,9 @@
 namespace Linnworks\Resources;
 
 use Linnworks\LinnworksClient;
-use Psr\Http\Message\StreamInterface;
 use ReflectionClass;
 use ReflectionException;
+use stdClass;
 
 class BaseResource
 {
@@ -35,10 +35,10 @@ class BaseResource
      *
      * @param string $name
      * @param array $arguments
-     * @return StreamInterface
+     * @return object|array
      * @throws ReflectionException
      */
-    public function __call(string $name, array $arguments): StreamInterface
+    public function __call(string $name, array $arguments)
     {
         $reflect = new ReflectionClass($this);
         $resource = $reflect->getShortName();
@@ -50,11 +50,22 @@ class BaseResource
         return $this->client->post($uri, $this->data);
     }
 
+    /**
+     * Set valid properties in the $data array.
+     *
+     * @param string $name
+     * @param $value
+     */
     public function __set(string $name, $value): void
     {
+        if (is_array($value)) {
+            $value = json_encode($value);
+        }
+
         if (property_exists($this, $name)) {
             $this->data[$name] = $value;
         }
+
     }
 
     /**

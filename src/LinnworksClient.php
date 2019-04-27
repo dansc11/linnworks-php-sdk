@@ -3,7 +3,7 @@
 namespace Linnworks;
 
 use GuzzleHttp\Client;
-use Psr\Http\Message\StreamInterface;
+use stdClass;
 
 /**
  * Client to make requests to the Linnworks API.
@@ -105,9 +105,9 @@ class LinnworksClient
      *
      * @param string $uri
      * @param array $params
-     * @return StreamInterface
+     * @return object|array
      */
-    public function post(string $uri, array $params = []): StreamInterface
+    public function post(string $uri, array $params = [])
     {
         $url = $this->getBaseUrl() . $uri;
         $body = $this->buildPayload($params);
