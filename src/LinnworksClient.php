@@ -3,15 +3,26 @@
 namespace Linnworks;
 
 use GuzzleHttp\Client;
-use stdClass;
+use GuzzleHttp\ClientInterface;
 
 /**
  * Client to make requests to the Linnworks API.
  */
 class LinnworksClient
 {
+    /**
+     * @var ClientInterface
+     */
     protected $client;
+
+    /**
+     * @var string
+     */
     protected $token;
+
+    /**
+     * @var string
+     */
     protected $server;
 
     const PRE_AUTH_BASE_URL = "https://api.linnworks.net/api/";
@@ -21,8 +32,9 @@ class LinnworksClient
      *
      * @param string|null $server
      * @param string|null $token
+     * @param ClientInterface|null $client
      */
-    public function __construct(?string $server = null, ?string $token = null)
+    public function __construct(?string $server = null, ?string $token = null, ?ClientInterface $client = null)
     {
         if ($server !== null) {
             $this->setServer($server);
@@ -30,6 +42,10 @@ class LinnworksClient
 
         if ($token !== null) {
             $this->setToken($token);
+        }
+
+        if ($client !== null) {
+            $this->client = $client;
         }
     }
 
@@ -105,9 +121,9 @@ class LinnworksClient
      *
      * @param string $uri
      * @param array $params
-     * @return object|array
+     * @return object
      */
-    public function post(string $uri, array $params = [])
+    public function post(string $uri, array $params = []): object
     {
         $url = $this->getBaseUrl() . $uri;
         $body = $this->buildPayload($params);
@@ -136,7 +152,6 @@ class LinnworksClient
     protected function getHeaders(): array
     {
         return [
-
             "Content-Type" => "application/x-www-form-urlencoded; charset=UTF-8",
             "User-Agent" => "Linnworks PHP API SDK ",
             "Referer" => "https://www.linnworks.net/",
