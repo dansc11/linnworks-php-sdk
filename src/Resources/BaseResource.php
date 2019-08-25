@@ -2,10 +2,10 @@
 
 namespace Linnworks\Resources;
 
+use GuzzleHttp\ClientInterface;
 use Linnworks\LinnworksClient;
 use ReflectionClass;
 use ReflectionException;
-use stdClass;
 
 class BaseResource
 {
@@ -24,10 +24,11 @@ class BaseResource
      *
      * @param string|null $server
      * @param string|null $token
+     * @param ClientInterface|null $client
      */
-    public function __construct(?string $server = null, string $token = null)
+    public function __construct(?string $server = null, string $token = null, ?ClientInterface $client = null)
     {
-        $this->client = new LinnworksClient($server, $token);
+        $this->client = $client ?? new LinnworksClient($server, $token);
     }
 
     /**
@@ -35,10 +36,10 @@ class BaseResource
      *
      * @param string $name
      * @param array $arguments
-     * @return object|array
+     * @return object
      * @throws ReflectionException
      */
-    public function __call(string $name, array $arguments)
+    public function __call(string $name, array $arguments): object
     {
         $reflect = new ReflectionClass($this);
         $resource = $reflect->getShortName();
@@ -65,19 +66,5 @@ class BaseResource
         if (property_exists($this, $name)) {
             $this->data[$name] = $value;
         }
-
-    }
-
-    /**
-     * Get the name of the method which called the function.
-     *
-     * @return string
-     */
-    protected function getCallingMethod(): string
-    {
-        $trace = debug_backtrace();
-        $caller = $trace[1];
-
-        return $caller['function'];
     }
 }

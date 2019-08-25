@@ -137,9 +137,9 @@ class LinnworksClient
     /**
      * Get a new API client instance.
      *
-     * @return Client
+     * @return ClientInterface
      */
-    protected function getClient(): Client
+    protected function getClient(): ClientInterface
     {
         return $this->client ?? new Client;
     }
