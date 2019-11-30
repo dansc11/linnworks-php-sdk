@@ -121,9 +121,9 @@ class LinnworksClient
      *
      * @param string $uri
      * @param array $params
-     * @return object
+     * @return array|object
      */
-    public function post(string $uri, array $params = []): object
+    public function post(string $uri, array $params = [])
     {
         $url = $this->getBaseUrl() . $uri;
         $body = $this->buildPayload($params);

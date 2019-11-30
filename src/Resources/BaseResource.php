@@ -36,11 +36,15 @@ class BaseResource
      *
      * @param string $name
      * @param array $arguments
-     * @return object
+     * @return object|array
      * @throws ReflectionException
      */
-    public function __call(string $name, array $arguments): object
+    public function __call(string $name, array $arguments)
     {
+        if (method_exists($this, $name)) {
+            return call_user_method_array([$this, $name], $arguments);
+        }
+
         $reflect = new ReflectionClass($this);
         $resource = $reflect->getShortName();
 
